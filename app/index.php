@@ -117,7 +117,7 @@ $username = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                         }"
                         class="flex-shrink-0 py-4 px-6 text-center font-medium border-b-2 focus:outline-none transition-colors duration-200 flex items-center gap-2">
                     <span>🔄</span>
-                    <span>Database</span>
+                    <span>Databases</span>
                 </button>
                 <button @click="tab = 'stegano'" 
                         :class="{ 
