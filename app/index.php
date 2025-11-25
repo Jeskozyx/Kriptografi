@@ -110,7 +110,7 @@ $username = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                     <span>🧩</span>
                     <span>Dekripsi File</span>
                 </button>
-                <button @click="tab = 'salsa20'" 
+                <!-- <button @click="tab = 'salsa20'" 
                         :class="{ 
                             'border-blue-500 text-blue-600 dark:text-blue-400 tab-active-indicator': tab === 'salsa20', 
                             'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300': tab !== 'salsa20' 
@@ -118,7 +118,7 @@ $username = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                         class="flex-shrink-0 py-4 px-6 text-center font-medium border-b-2 focus:outline-none transition-colors duration-200 flex items-center gap-2">
                     <span>🔄</span>
                     <span>Databases</span>
-                </button>
+                </button> -->
                 <button @click="tab = 'stegano'" 
                         :class="{ 
                             'border-blue-500 text-blue-600 dark:text-blue-400 tab-active-indicator': tab === 'stegano', 
