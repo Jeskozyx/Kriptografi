@@ -3,30 +3,49 @@
 
 function lsb_hide_message($image_path, $secret_message) {
     $python_script = __DIR__ . '/../python/lsb_tool.py';
-    $output_dir = __DIR__ . '/uploads/';
+    $output_dir = rtrim(__DIR__ . '/uploads', '/\\'); 
     
-    // Pastikan direktori upload ada
     if (!is_dir($output_dir)) {
         mkdir($output_dir, 0777, true);
     }
     
-    // Escape path dan pesan untuk keamanan
+    if (trim($secret_message) === '') {
+        return ['status' => 'gagal', 'message' => 'Pesan rahasia tidak boleh kosong.'];
+    }
+
+    // --- PERUBAHAN UTAMA DI SINI ---
+    
+    // 1. Buat file temporary untuk menampung pesan panjang
+    $temp_msg_file = tempnam(sys_get_temp_dir(), 'stego_msg_');
+    
+    // 2. Tulis pesan rahasia ke file tersebut (Apa adanya, termasuk enter/spasi)
+    if (file_put_contents($temp_msg_file, $secret_message) === false) {
+        return ['status' => 'gagal', 'message' => 'Gagal menulis pesan ke file sementara.'];
+    }
+
+    // 3. Escape path script dan path file
+    $script_escaped = escapeshellarg($python_script);
     $image_path_escaped = escapeshellarg($image_path);
-    $secret_message_escaped = escapeshellarg($secret_message);
+    $msg_file_path_escaped = escapeshellarg($temp_msg_file); // Kirim PATH file, bukan isinya
     $output_dir_escaped = escapeshellarg($output_dir);
     
-    // Perintah Python
-    $command = "python " . escapeshellarg($python_script) . " encode " . $image_path_escaped . " " . $secret_message_escaped . " " . $output_dir_escaped . " 2>&1";
+    // 4. Perintah Python sekarang menerima path file pesan
+    $command = "python $script_escaped encode $image_path_escaped $msg_file_path_escaped $output_dir_escaped 2>&1";
     
-    // Eksekusi perintah
+    // Eksekusi
+    error_log("LSB Command: " . $command);
     $output = shell_exec($command);
+    error_log("LSB Output: " . $output);
     
-    // Debug: Tampilkan output untuk troubleshooting
-    error_log("LSB Hide Output: " . $output);
+    // 5. Hapus file temporary pesan setelah selesai (Cleanup)
+    if (file_exists($temp_msg_file)) {
+        unlink($temp_msg_file);
+    }
     
-    // Parse hasil
+    // --- END PERUBAHAN ---
+
+    // Parse hasil (Tetap sama)
     if (strpos($output, 'SUCCESS:') !== false) {
-        // Ekstrak path dari output
         preg_match('/SUCCESS:(.+?)$/m', $output, $matches);
         if (isset($matches[1])) {
             $full_path = trim($matches[1]);
@@ -39,48 +58,44 @@ function lsb_hide_message($image_path, $secret_message) {
         }
     }
     
+    // Handle error kapasitas dari Python
+    if (strpos($output, 'Kapasitas maks') !== false) {
+        return [
+            'status' => 'gagal',
+            'message' => 'Gambar terlalu kecil untuk pesan sepanjang ini. Gunakan gambar resolusi lebih tinggi.'
+        ];
+    }
+
     return [
         'status' => 'gagal',
-        'message' => $output ?: 'Unknown error occurred'
+        'message' => $output ? trim($output) : 'Terjadi kesalahan tidak diketahui.'
     ];
 }
 
 function lsb_extract_message($image_path) {
+    // Fungsi ekstrak tetap sama, karena outputnya dicetak ke stdout (layar)
+    // Python sudah handle print pesan panjang
     $python_script = __DIR__ . '/../python/lsb_tool.py';
-    
-    // Escape path untuk keamanan
+    $script_escaped = escapeshellarg($python_script);
     $image_path_escaped = escapeshellarg($image_path);
     
-    // Perintah Python
-    $command = "python " . escapeshellarg($python_script) . " decode " . $image_path_escaped . " 2>&1";
-    
-    // Eksekusi perintah
+    $command = "python $script_escaped decode $image_path_escaped 2>&1";
     $output = shell_exec($command);
     
-    // Debug: Tampilkan output untuk troubleshooting
-    error_log("LSB Extract Output: " . $output);
-    
-    // Parse hasil
     if (strpos($output, 'EXTRACTED:') !== false) {
-        preg_match('/EXTRACTED:(.+?)$/m', $output, $matches);
-        if (isset($matches[1])) {
-            return trim($matches[1]);
+        // Ambil string setelah "EXTRACTED:"
+        // Kita gunakan substring karena pesan mungkin mengandung karakter aneh/newline
+        $prefix = "EXTRACTED:";
+        $pos = strpos($output, $prefix);
+        if ($pos !== false) {
+            return substr($output, $pos + strlen($prefix));
         }
     }
     
-    return "Gagal mengekstrak pesan: " . $output;
+    return "Gagal mengekstrak pesan. Debug: " . $output;
 }
 
-// Fungsi enkripsi IDEA (jika diperlukan)
-function encrypt_idea($message, $key = null) {
-    // Implementasi enkripsi IDEA di PHP
-    // Untuk sementara, return pesan asli
-    return $message;
-}
-
-function decrypt_idea($encrypted_message, $key = null) {
-    // Implementasi dekripsi IDEA di PHP  
-    // Untuk sementara, return pesan asli
-    return $encrypted_message;
-}
+// Fungsi dummy lain tetap...
+function encrypt_idea($message, $key = null) { return $message; }
+function decrypt_idea($encrypted_message, $key = null) { return $encrypted_message; }
 ?>

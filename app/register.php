@@ -14,11 +14,12 @@ if (!isset($success)) { $success = ''; }
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .register-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
+        
+        /* HAPUS .register-bg lama */
+        
         .card-gradient {
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            background: rgba(255, 255, 255, 0.95); /* Sedikit lebih solid utk form panjang */
+            backdrop-filter: blur(10px);
         }
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -30,9 +31,12 @@ if (!isset($success)) { $success = ''; }
         }
     </style>
 </head>
-<body class="register-bg min-h-screen flex items-center justify-center p-4">
-    <div class="max-w-md w-full">
-        <div class="card-gradient rounded-2xl shadow-2xl p-8">
+<body class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gray-900">
+
+    <div id="react-background-register"></div>
+
+    <div class="max-w-md w-full relative z-10">
+        <div class="card-gradient rounded-2xl shadow-2xl p-8 border border-white/20">
             <div class="text-center mb-8">
                 <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -52,7 +56,7 @@ if (!isset($success)) { $success = ''; }
             <?php if ($success): ?>
                 <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6">
                     <?php echo htmlspecialchars($success); ?>
-                    <a href="login.php" class="underline ml-2">Login sekarang</a>
+                    <a href="login.php" class="underline ml-2 font-bold">Login sekarang</a>
                 </div>
             <?php endif; ?>
 
@@ -61,35 +65,35 @@ if (!isset($success)) { $success = ''; }
                     <div>
                         <label for="full_name" class="block text-sm font-medium text-gray-700 mb-2">Nama Lengkap</label>
                         <input type="text" id="full_name" name="full_name" required
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300 bg-white/80"
                                placeholder="Masukkan nama lengkap">
                     </div>
 
                     <div>
                         <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
                         <input type="email" id="email" name="email" required
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300 bg-white/80"
                                placeholder="Masukkan email">
                     </div>
 
                     <div>
                         <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
                         <input type="text" id="username" name="username" required
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300 bg-white/80"
                                placeholder="Buat username">
                     </div>
                     
                     <div>
                         <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
                         <input type="password" id="password" name="password" required
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300 bg-white/80"
                                placeholder="Buat password (min. 6 karakter)">
                     </div>
 
                     <div>
                         <label for="confirm_password" class="block text-sm font-medium text-gray-700 mb-2">Konfirmasi Password</label>
                         <input type="password" id="confirm_password" name="confirm_password" required
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300 bg-white/80"
                                placeholder="Ulangi password">
                     </div>
 
@@ -109,10 +113,12 @@ if (!isset($success)) { $success = ''; }
         </div>
         
         <div class="text-center mt-6">
-            <p class="text-white text-sm">
+            <p class="text-white text-sm opacity-80">
                 &copy; <?php echo date('Y'); ?> SecureCrypt - All rights reserved
             </p>
         </div>
     </div>
+
+    <script type="module" src="../assets/js/dist/bundle.js"></script>
 </body>
 </html>

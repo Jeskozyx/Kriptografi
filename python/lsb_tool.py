@@ -1,131 +1,146 @@
 import sys
 import os
 from PIL import Image
-import re
 
-# Delimiter (Penanda Akhir Pesan) yang unik
+# Delimiter unik
 DELIMITER = "::STEGO_PESAN_BERAKHIR::"
 
-# Fungsi untuk mengubah data apapun menjadi string biner
 def data_to_binary(data):
     if isinstance(data, str):
-        return ''.join([format(ord(i), "08b") for i in data])
+        # Support UTF-8 characters (Emoji, dll)
+        return ''.join([format(b, "08b") for b in data.encode('utf-8')])
+    return ""
 
-# Fungsi untuk mengubah string biner kembali ke teks
 def binary_to_data(binary):
     all_bytes = [binary[i: i+8] for i in range(0, len(binary), 8)]
-    decoded_data = ""
+    byte_array = bytearray()
     for byte in all_bytes:
         if len(byte) == 8:
             try:
-                decoded_data += chr(int(byte, 2))
+                byte_array.append(int(byte, 2))
             except ValueError:
-                pass # Abaikan bit sisa yang tidak membentuk byte penuh
-    return decoded_data
-
-# Fungsi untuk menyembunyikan data di LSB
-def encode_lsb(image_path, secret_message, output_path):
+                pass
     try:
-        # Buka gambar dan pastikan dalam mode RGB
+        return byte_array.decode('utf-8', errors='ignore')
+    except:
+        return str(byte_array)
+
+def encode_lsb(image_path, secret_content, output_path, is_file_path=False):
+    try:
+        # --- LOGIKA BACA FILE ---
+        final_message = ""
+        if is_file_path and os.path.exists(secret_content):
+            # Jika input adalah path file, baca isinya
+            with open(secret_content, 'r', encoding='utf-8', errors='ignore') as f:
+                final_message = f.read()
+        else:
+            # Fallback jika string biasa
+            final_message = secret_content
+
+        if not final_message:
+            print("ERROR: Pesan kosong.")
+            return
+
         img = Image.open(image_path, 'r').convert('RGB')
         width, height = img.size
         new_img = img.copy()
         
-        # Tambahkan delimiter ke pesan
-        secret_message += DELIMITER
-        binary_secret = data_to_binary(secret_message)
+        # Tambahkan delimiter
+        full_message = final_message + DELIMITER
         
-        data_index = 0
-        num_pixels = width * height
+        # Konversi ke binary (UTF-8 supported)
+        binary_secret = data_to_binary(full_message)
         
-        if len(binary_secret) > num_pixels * 3:
-            # *3 karena kita pakai 3 channel (R, G, B)
-            print("ERROR: Pesan terlalu besar untuk gambar ini.")
+        # Hitung kapasitas maksimal (width * height * 3 channel RGB)
+        max_capacity = width * height * 3
+        
+        if len(binary_secret) > max_capacity:
+            print(f"ERROR: Pesan terlalu panjang! Butuh {len(binary_secret)} bit, Kapasitas Gambar: {max_capacity} bit.")
             return
 
+        data_index = 0
         pixels = new_img.load()
-
+        
         for x in range(width):
             for y in range(height):
                 if data_index < len(binary_secret):
-                    # Ambil data piksel (R, G, B)
                     pixel = list(img.getpixel((x, y)))
-                    
-                    for i in range(3): # Loop R, G, B
+                    for i in range(3): # R, G, B
                         if data_index < len(binary_secret):
-                            # Ganti LSB piksel dengan bit pesan
+                            # Ubah bit LSB
                             pixel[i] = pixel[i] & ~1 | int(binary_secret[data_index])
                             data_index += 1
-                            
-                    # Set piksel baru
                     pixels[x, y] = tuple(pixel)
                 else:
-                    # Selesai menyisipkan
                     break
             if data_index >= len(binary_secret):
                 break
         
-        # Simpan sebagai PNG agar LSB tidak hilang (lossless)
         new_img.save(output_path, "PNG")
-        print(f"SUCCESS:{output_path}") # Kirim path sukses ke PHP
+        print(f"SUCCESS:{output_path}")
 
     except Exception as e:
         print(f"ERROR: {e}")
 
-# Fungsi untuk mengekstrak data dari LSB
 def decode_lsb(image_path):
     try:
         img = Image.open(image_path, 'r').convert('RGB')
         width, height = img.size
         binary_data = ""
         
+        # Ekstrak bit LSB
         for x in range(width):
             for y in range(height):
                 pixel = img.getpixel((x, y))
-                
-                for i in range(3): # Loop R, G, B
-                    # Ekstrak LSB (bit terakhir)
+                for i in range(3):
                     binary_data += str(pixel[i] & 1)
         
-        # Ubah data biner ke teks
+        # Konversi ke text
         decoded_text = binary_to_data(binary_data)
         
-        # Cari delimiter kita
         delimiter_pos = decoded_text.find(DELIMITER)
         if delimiter_pos != -1:
-            # Jika ditemukan, print pesan sebelum delimiter
+            # Print hasil extract. Perhatikan encoding utf-8 untuk terminal
             print(f"EXTRACTED:{decoded_text[:delimiter_pos]}")
         else:
-            print("ERROR: Tidak ada pesan rahasia ditemukan (delimiter tidak ada).")
+            # Coba cari partial message jika delimiter rusak
+            print("ERROR: Tidak ditemukan pesan rahasia (Delimiter tidak cocok).")
 
     except Exception as e:
         print(f"ERROR: {e}")
 
-# --- MAIN ---
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("ERROR: Argumen tidak cukup.")
+    if len(sys.argv) < 2:
+        print("ERROR: Tidak ada argumen.")
         sys.exit(1)
 
     mode = sys.argv[1]
-    image_path = sys.argv[2]
     
     if mode == 'encode':
         if len(sys.argv) < 5:
-            print("ERROR: Argumen encode tidak lengkap.")
+            print("ERROR: Argumen encode kurang.")
             sys.exit(1)
-        secret_message = sys.argv[3]
+            
+        image_path = sys.argv[2]
+        message_input = sys.argv[3] # Ini sekarang adalah path file temp
         output_dir = sys.argv[4]
         
-        # Buat nama file output
-        original_filename = os.path.basename(image_path).split('.')[0]
-        output_filename = f"stego_{original_filename}.png"
+        if not os.path.exists(output_dir):
+            try: os.makedirs(output_dir)
+            except: pass
+
+        original_filename = os.path.basename(image_path)
+        name_part = os.path.splitext(original_filename)[0]
+        output_filename = f"stego_{name_part}.png"
         output_path = os.path.join(output_dir, output_filename)
         
-        encode_lsb(image_path, secret_message, output_path)
+        # Panggil encode dengan flag is_file_path=True karena PHP mengirim path file
+        # Kita asumsikan PHP selalu mengirim path file temp
+        encode_lsb(image_path, message_input, output_path, is_file_path=True)
         
     elif mode == 'decode':
+        if len(sys.argv) < 3:
+            print("ERROR: Argumen decode kurang.")
+            sys.exit(1)
+        image_path = sys.argv[2]
         decode_lsb(image_path)
-    else:
-        print("ERROR: Mode tidak valid. Gunakan 'encode' atau 'decode'.")
-        sys.exit(1)

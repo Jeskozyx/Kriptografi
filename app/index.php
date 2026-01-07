@@ -53,6 +53,12 @@ $username = isset($_SESSION['username']) ? $_SESSION['username'] : '';
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-200 min-h-screen">
+
+<div id="react-velocity-top" class="w-full bg-blue-600 text-white py-2 overflow-hidden mb-4"></div>
+    
+    <?php if ($isLoggedIn): ?>
+        <div id="react-splash-screen" data-username="<?php echo htmlspecialchars($username); ?>"></div>
+    <?php endif; ?>
     <header class="bg-white dark:bg-gray-800 shadow-md">
         <div class="container mx-auto max-w-7xl p-4 flex justify-between items-center">
             <div>
@@ -110,7 +116,7 @@ $username = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                     <span>🧩</span>
                     <span>Dekripsi File</span>
                 </button>
-                <!-- <button @click="tab = 'salsa20'" 
+                <button @click="tab = 'salsa20'" 
                         :class="{ 
                             'border-blue-500 text-blue-600 dark:text-blue-400 tab-active-indicator': tab === 'salsa20', 
                             'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300': tab !== 'salsa20' 
@@ -118,7 +124,7 @@ $username = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                         class="flex-shrink-0 py-4 px-6 text-center font-medium border-b-2 focus:outline-none transition-colors duration-200 flex items-center gap-2">
                     <span>🔄</span>
                     <span>Databases</span>
-                </button> -->
+                </button>
                 <button @click="tab = 'stegano'" 
                         :class="{ 
                             'border-blue-500 text-blue-600 dark:text-blue-400 tab-active-indicator': tab === 'stegano', 
@@ -479,12 +485,13 @@ $username = isset($_SESSION['username']) ? $_SESSION['username'] : '';
                                             </label>
                                         </div>
                                     </div>
-                                    <div>
-                                        <label for="stegano_message" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pesan Rahasia</label>
-                                        <textarea id="stegano_message" name="stegano_message" rows="4" required
-                                               class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors resize-vertical"
-                                               placeholder="Masukkan pesan rahasia yang ingin disembunyikan dalam gambar"></textarea>
-                                    </div>
+                                        <div>
+                                            <label for="stegano_message" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Pesan Rahasia</label>
+                                            <textarea id="stegano_message" name="stegano_message" rows="8" required
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-colors resize-vertical"
+                                                placeholder="Masukkan pesan rahasia yang sangat panjang di sini... (Kapasitas tergantung ukuran gambar)"></textarea>
+                                            <p class="text-xs text-gray-500 mt-1 dark:text-gray-400">Tips: Semakin besar resolusi gambar, semakin panjang pesan yang bisa disembunyikan.</p>
+                                        </div>
                                     <button type="submit" name="proses_stegano" 
                                             class="w-full px-5 py-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors font-semibold text-lg">
                                         🖼️ Sembunyikan Pesan & Download Gambar
@@ -552,6 +559,8 @@ $username = isset($_SESSION['username']) ? $_SESSION['username'] : '';
         </div>
     </main>
 
+    <div id="react-velocity-bottom" class="w-full bg-gray-800 text-gray-400 py-4 overflow-hidden mt-8"></div>
+
     <script>
         function handleFileSelect(event) {
             const fileInput = event.target;
@@ -574,5 +583,6 @@ $username = isset($_SESSION['username']) ? $_SESSION['username'] : '';
             }
         }
     </script>
+    <script type="module" src="../assets/js/dist/bundle.js"></script>
 </body>
 </html>

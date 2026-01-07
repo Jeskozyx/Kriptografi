@@ -14,12 +14,15 @@ if (!isset($success)) { $success = ''; }
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .login-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
+        
+        /* HAPUS .login-bg lama, ganti dengan style transparan jika perlu */
+        
         .card-gradient {
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            /* Tambahkan backdrop-blur agar teks terbaca jelas di atas animasi */
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
         }
+        
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             transition: all 0.3s ease;
@@ -30,9 +33,12 @@ if (!isset($success)) { $success = ''; }
         }
     </style>
 </head>
-<body class="login-bg min-h-screen flex items-center justify-center p-4">
-    <div class="max-w-md w-full">
-        <div class="card-gradient rounded-2xl shadow-2xl p-8">
+<body class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gray-900">
+    
+    <div id="react-background-login"></div>
+
+    <div class="max-w-md w-full relative z-10">
+        <div class="card-gradient rounded-2xl shadow-2xl p-8 border border-white/20">
             <div class="text-center mb-8">
                 <div class="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -60,14 +66,14 @@ if (!isset($success)) { $success = ''; }
                     <div>
                         <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
                         <input type="text" id="username" name="username" required
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300 bg-white/80"
                                placeholder="Masukkan username">
                     </div>
                     
                     <div>
                         <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
                         <input type="password" id="password" name="password" required
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-300 bg-white/80"
                                placeholder="Masukkan password">
                     </div>
 
@@ -81,16 +87,18 @@ if (!isset($success)) { $success = ''; }
             <div class="mt-6 text-center">
                 <p class="text-sm text-gray-600">
                     atau <br>
-                    <a href="../app/register.php" class="font-mono bg-gray-100 px-2 py-1 rounded">Register di sini</a>
+                    <a href="register.php" class="font-mono bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 transition">Register di sini</a>
                 </p>
             </div>
         </div>
         
         <div class="text-center mt-6">
-            <p class="text-white text-sm">
+            <p class="text-white text-sm opacity-80">
                 &copy; <?php echo date('Y'); ?> SecureCrypt - All rights reserved
             </p>
         </div>
     </div>
+
+    <script type="module" src="../assets/js/dist/bundle.js"></script>
 </body>
-</html>
+</html> 
